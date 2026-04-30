@@ -37,11 +37,11 @@ jobs:
             ${{ runner.os }}-m2-
 
       - name: Run API tests for ${{ matrix.environment }}
-        run: mvn -B clean test -Denv=${{ matrix.environment }} -Dallure.results.directory=target/allure-results-${{ matrix.environment }}
+        run: mvn -B clean test -Denv=${{ matrix.environment }} -Dallure.results.directory=${{ github.workspace }}/target/allure-results-${{ matrix.environment }}
 
       - name: Generate Allure report for ${{ matrix.environment }}
         if: always()
-        run: mvn -B allure:report -Dallure.results.directory=target/allure-results-${{ matrix.environment }} -Dallure.report.directory=target/allure-report-${{ matrix.environment }}
+        run: mvn -B allure:report -Dallure.results.directory=${{ github.workspace }}/target/allure-results-${{ matrix.environment }} -Dallure.report.directory=${{ github.workspace }}/target/allure-report-${{ matrix.environment }}
 
       - name: Zip Allure report for ${{ matrix.environment }}
         if: always()
@@ -60,7 +60,7 @@ jobs:
         if: matrix.environment == 'prod' && always()
         uses: actions/upload-pages-artifact@v4
         with:
-          name: allure-report-prod
+          name: allure-report-prod-${{ github.run_id }}
           path: target/allure-report-${{ matrix.environment }}
 
   deploy:
