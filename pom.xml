@@ -90,6 +90,22 @@
                     <resultsDirectory>${allure.results.directory}</resultsDirectory>
                     <reportDirectory>${allure.report.directory}</reportDirectory>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>allure-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>allure-serve</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>serve</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
