@@ -58,8 +58,9 @@ jobs:
 
       - name: Upload Allure report to Pages
         if: matrix.environment == 'prod' && always()
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
+          name: allure-report-prod
           path: target/allure-report-${{ matrix.environment }}
 
   deploy:
