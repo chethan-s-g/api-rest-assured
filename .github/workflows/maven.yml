@@ -60,7 +60,7 @@ jobs:
         if: matrix.environment == 'prod' && always()
         uses: actions/upload-pages-artifact@v4
         with:
-          name: allure-report-prod-${{ github.run_id }}
+          name: github-pages
           path: target/allure-report-${{ matrix.environment }}
 
   deploy:
