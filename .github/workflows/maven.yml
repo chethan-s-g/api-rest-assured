@@ -2,7 +2,7 @@ name: Maven API Test Pipeline
 
 on:
   schedule:
-    - cron: '30 0 * * *'
+    - cron: '30 4 * * *'
   push:
     branches:
       - main
