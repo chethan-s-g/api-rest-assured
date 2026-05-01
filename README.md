@@ -32,6 +32,9 @@ This repository contains a Maven-based API automation project using TestNG, Rest
 This project loads environment-specific values from `src/test/resources/config/{dev,stage,prod}.properties`.
 Use `-Denv=dev`, `-Denv=stage`, or `-Denv=prod` to execute against each configuration.
 
+## View Report 
+https://chethan-s-g.github.io/api-rest-assured/
+
 ## GitHub Actions
 
 The workflow in `.github/workflows/maven.yml` runs the test suite for `dev`, `stage`, and `prod` environments and uploads generated Allure reports as artifacts.
