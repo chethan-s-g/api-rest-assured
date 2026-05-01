@@ -93,6 +93,11 @@ jobs:
           mv ./artifacts/allure-report-stage/*.zip ./artifacts/
           mv ./artifacts/allure-report-prod/*.zip ./artifacts/
 
+      - name: Unzip prod report artifact
+        run: |
+          mkdir -p target/allure-report-prod
+          unzip ./artifacts/allure-report-prod.zip -d target/allure-report-prod
+
       - name: Create release with reports
         run: |
           DATE=$(date +%Y-%m-%d)
