@@ -58,15 +58,15 @@ jobs:
           name: allure-report-${{ matrix.environment }}
           path: target/allure-report-${{ matrix.environment }}.zip
 
-      - name: Create landing page index.html (prod only)
+      - name: Prepare Pages artifact (prod only)
         if: matrix.environment == 'prod' && always()
         run: |
-          ROOT_DIR="target"
-          echo "<!DOCTYPE html>" > $ROOT_DIR/index.html
-          echo "<html><head><title>API Test Reports</title></head><body>" >> $ROOT_DIR/index.html
-          echo "<h1>API Test Reports</h1>" >> $ROOT_DIR/index.html
-          echo "<p><a href='./allure-report-${{ matrix.environment }}/index.html'>Open Allure Report</a></p>" >> $ROOT_DIR/index.html
-          echo "</body></html>" >> $ROOT_DIR/index.html
+          DATE=$(date +%Y-%m-%d)
+          UNIQUE_DIR="target/reports/v${DATE}-${GITHUB_RUN_ID}"
+          mkdir -p "$UNIQUE_DIR"
+          cp -r target/allure-report-${{ matrix.environment }}/* "$UNIQUE_DIR/"
+          # Create landing page at root
+          echo "<!DOCTYPE html><html><body><h1>Reports</h1><p><a href='./reports/v${DATE}-${GITHUB_RUN_ID}/index.html'>Open Report</a></p></body></html>" > target/index.html
 
       - name: Upload Allure report to Pages
         if: matrix.environment == 'prod' && always()
@@ -115,20 +115,19 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Update README.md with new release link
+      - name: Update README.md with new report link
         run: |
           DATE=$(date +%Y-%m-%d)
-          FORMATTED_DATE=$(date +"%B %d, %Y")  # e.g., "May 01, 2026"
-          RELEASE_URL="https://github.com/chethan-s-g/api-rest-assured/releases/tag/v${DATE}-${GITHUB_RUN_ID}"
+          FORMATTED_DATE=$(date +"%B %d, %Y")
+          REPORT_URL="https://chethan-s-g.github.io/api-rest-assured/reports/v${DATE}-${GITHUB_RUN_ID}/index.html"
           
           cd gh-pages
-          # Add new entry at the top (after the header)
-          sed -i "4i - [$FORMATTED_DATE]($RELEASE_URL) - Dev, Stage, Prod reports" README.md
+          sed -i "4i - [$FORMATTED_DATE]($REPORT_URL) - Unique Prod report (Run $GITHUB_RUN_ID)" README.md
           
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add README.md
-          git commit -m "Add link for reports on $DATE (Run $GITHUB_RUN_ID)" || echo "No changes"
+          git commit -m "Add link for unique report on $DATE (Run $GITHUB_RUN_ID)" || echo "No changes"
           git push origin gh-pages
 
   deploy-pages:
