@@ -78,6 +78,12 @@ jobs:
         with:
           path: ./artifacts
 
+      - name: Flatten artifact structure
+        run: |
+          mv ./artifacts/allure-report-dev/*.zip ./artifacts/
+          mv ./artifacts/allure-report-stage/*.zip ./artifacts/
+          mv ./artifacts/allure-report-prod/*.zip ./artifacts/
+
       - name: Create release with reports
         run: |
           DATE=$(date +%Y-%m-%d)
