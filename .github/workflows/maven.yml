@@ -58,22 +58,22 @@ jobs:
           name: allure-report-${{ matrix.environment }}
           path: target/allure-report-${{ matrix.environment }}.zip
 
-      - name: Create index.html with report link (prod only)
+      - name: Create landing page index.html (prod only)
         if: matrix.environment == 'prod' && always()
         run: |
-          REPORT_DIR="target/allure-report-${{ matrix.environment }}"
-          echo "<!DOCTYPE html>" > $REPORT_DIR/index.html
-          echo "<html><head><title>API Test Reports</title></head><body>" >> $REPORT_DIR/index.html
-          echo "<h1>API Test Reports</h1>" >> $REPORT_DIR/index.html
-          echo "<p><a href='./'>Open Allure Report</a></p>" >> $REPORT_DIR/index.html
-          echo "</body></html>" >> $REPORT_DIR/index.html
+          ROOT_DIR="target"
+          echo "<!DOCTYPE html>" > $ROOT_DIR/index.html
+          echo "<html><head><title>API Test Reports</title></head><body>" >> $ROOT_DIR/index.html
+          echo "<h1>API Test Reports</h1>" >> $ROOT_DIR/index.html
+          echo "<p><a href='./allure-report-${{ matrix.environment }}/index.html'>Open Allure Report</a></p>" >> $ROOT_DIR/index.html
+          echo "</body></html>" >> $ROOT_DIR/index.html
 
       - name: Upload Allure report to Pages
         if: matrix.environment == 'prod' && always()
         uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages
-          path: target/allure-report-${{ matrix.environment }}
+          path: target
 
   deploy-and-release:
     runs-on: ubuntu-latest
