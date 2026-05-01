@@ -10,7 +10,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -58,96 +58,21 @@ jobs:
           name: allure-report-${{ matrix.environment }}
           path: target/allure-report-${{ matrix.environment }}.zip
 
-      - name: Prepare Pages artifact (prod only)
-        if: matrix.environment == 'prod' && always()
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          UNIQUE_DIR="target/reports/v${DATE}-${GITHUB_RUN_ID}"
-          mkdir -p "$UNIQUE_DIR"
-          cp -r target/allure-report-${{ matrix.environment }}/* "$UNIQUE_DIR/"
-          echo "<!DOCTYPE html><html><body><h1>Reports</h1><p><a href='./reports/v${DATE}-${GITHUB_RUN_ID}/index.html'>Open Report</a></p></body></html>" > target/index.html
-
       - name: Upload Allure report to Pages
         if: matrix.environment == 'prod' && always()
         uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages
-          path: target
+          path: target/allure-report-${{ matrix.environment }}
 
-  deploy-and-release:
+  deploy:
     runs-on: ubuntu-latest
     needs: api-tests
-    if: always()
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download Allure report artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Flatten artifact structure
-        run: |
-          mv ./artifacts/allure-report-dev/*.zip ./artifacts/
-          mv ./artifacts/allure-report-stage/*.zip ./artifacts/
-          mv ./artifacts/allure-report-prod/*.zip ./artifacts/
-
-      - name: Unzip prod report artifact
-        run: |
-          mkdir -p target/allure-report-prod
-          unzip ./artifacts/allure-report-prod.zip -d target/allure-report-prod
-
-      - name: Create release with reports
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          RELEASE_TAG="v${DATE}-${GITHUB_RUN_ID}"
-          RELEASE_BODY="Allure reports for $DATE (dev, stage, prod environments)."
-          
-          gh release create "$RELEASE_TAG" \
-            --title "Reports for $DATE (Run $GITHUB_RUN_ID)" \
-            --notes "$RELEASE_BODY" \
-            ./artifacts/allure-report-dev.zip \
-            ./artifacts/allure-report-stage.zip \
-            ./artifacts/allure-report-prod.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-
-      - name: Copy unique report into gh-pages branch
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          UNIQUE_DIR="reports/v${DATE}-${GITHUB_RUN_ID}"
-          mkdir -p gh-pages/$UNIQUE_DIR
-          cp -r target/allure-report-prod/* gh-pages/$UNIQUE_DIR/
-
-      - name: Update README.md with new report link
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          FORMATTED_DATE=$(date +"%B %d, %Y")
-          REPORT_URL="https://chethan-s-g.github.io/api-rest-assured/reports/v${DATE}-${GITHUB_RUN_ID}/index.html"
-          
-          cd gh-pages
-          sed -i "4i - [$FORMATTED_DATE]($REPORT_URL) - Unique Prod report (Run $GITHUB_RUN_ID)" README.md
-          
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add README.md reports/
-          git commit -m "Add link and report for $DATE (Run $GITHUB_RUN_ID)" || echo "No changes"
-          git push origin gh-pages
-
-  deploy-pages:
-    runs-on: ubuntu-latest
-    needs: api-tests
-    if: always()
-    permissions:
-      pages: write
-      id-token: write
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
