@@ -65,7 +65,6 @@ jobs:
           UNIQUE_DIR="target/reports/v${DATE}-${GITHUB_RUN_ID}"
           mkdir -p "$UNIQUE_DIR"
           cp -r target/allure-report-${{ matrix.environment }}/* "$UNIQUE_DIR/"
-          # Create landing page at root
           echo "<!DOCTYPE html><html><body><h1>Reports</h1><p><a href='./reports/v${DATE}-${GITHUB_RUN_ID}/index.html'>Open Report</a></p></body></html>" > target/index.html
 
       - name: Upload Allure report to Pages
@@ -115,6 +114,13 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
+      - name: Copy unique report into gh-pages branch
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          UNIQUE_DIR="reports/v${DATE}-${GITHUB_RUN_ID}"
+          mkdir -p gh-pages/$UNIQUE_DIR
+          cp -r target/allure-report-prod/* gh-pages/$UNIQUE_DIR/
+
       - name: Update README.md with new report link
         run: |
           DATE=$(date +%Y-%m-%d)
@@ -126,8 +132,8 @@ jobs:
           
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add README.md
-          git commit -m "Add link for unique report on $DATE (Run $GITHUB_RUN_ID)" || echo "No changes"
+          git add README.md reports/
+          git commit -m "Add link and report for $DATE (Run $GITHUB_RUN_ID)" || echo "No changes"
           git push origin gh-pages
 
   deploy-pages:
