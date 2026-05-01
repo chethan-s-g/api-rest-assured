@@ -58,6 +58,16 @@ jobs:
           name: allure-report-${{ matrix.environment }}
           path: target/allure-report-${{ matrix.environment }}.zip
 
+      - name: Create index.html with report link (prod only)
+        if: matrix.environment == 'prod' && always()
+        run: |
+          REPORT_DIR="target/allure-report-${{ matrix.environment }}"
+          echo "<!DOCTYPE html>" > $REPORT_DIR/index.html
+          echo "<html><head><title>API Test Reports</title></head><body>" >> $REPORT_DIR/index.html
+          echo "<h1>API Test Reports</h1>" >> $REPORT_DIR/index.html
+          echo "<p><a href='./'>Open Allure Report</a></p>" >> $REPORT_DIR/index.html
+          echo "</body></html>" >> $REPORT_DIR/index.html
+
       - name: Upload Allure report to Pages
         if: matrix.environment == 'prod' && always()
         uses: actions/upload-pages-artifact@v4
@@ -120,3 +130,14 @@ jobs:
           git add README.md
           git commit -m "Add link for reports on $DATE" || echo "No changes"
           git push origin gh-pages
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: api-tests
+    if: always()
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
